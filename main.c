@@ -36,25 +36,49 @@ int move_forward(int* is_forward) {
     return motor_command;
 }
 
-int turn_left() {
-    int motor_command = -10e9;
+int turn_left(int trigger) {
+    int motor_command = 1;
     // trigger 발생 시에만 호출되는 함수
-
-    return motor_command;
+    if(trigger == 0){
+        printf("turn_left get a trigger with 0\n");
+    } else if (trigger == 1){
+        printf("turn_left get a trigger with 1\n");
+        motor_interface(motor_command);
+    } else {
+        fprintf(stderr, "An invalid trigger has occurred.");
+        return -1;
+    }
+    return 0;
 }
 
-int turn_right() {
-    int motor_command = -10e9;
+int turn_right(int trigger) {
+    int motor_command = 2;
     // trigger 발생 시에만 호출되는 함수
-
-    return motor_command;
+    if(trigger == 0){
+        printf("turn_right get a trigger with 0\n");
+    } else if (trigger == 1){
+        printf("turn_right get a trigger with 1\n");
+        motor_interface(motor_command);
+    } else {
+        fprintf(stderr, "An invalid trigger has occurred.");
+        return -1;
+    }
+    return 0;
 }
 
-int move_backward() {
-    int motor_command = -10e9;
+int move_backward(int trigger) {
+    int motor_command = 3;
     // trigger 발생 시에만 호출되는 함수
-
-    return motor_command;
+    if(trigger == 0){
+        printf("move_backward get a trigger with 0\n");
+    } else if (trigger == 1){
+        printf("move_backward get a trigger with 1\n");
+        motor_interface(motor_command);
+    } else {
+        fprintf(stderr, "An invalid trigger has occurred.");
+        return -1;
+    }
+    return 0;
 }
 
 void motor_interface(int motor_command) {

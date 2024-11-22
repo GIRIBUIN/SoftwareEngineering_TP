@@ -127,53 +127,54 @@ void controller() {
         determine_obstacle_location(*obstacle_location, f, l, r);
         motor_command = obstacle_location[0] == 1 ? -1 : 0;
         determine_dust_existence(*dust_existence, d);
-
+        
+        
         if (motor_command == -1) { // 앞에 장애물이 있는 경우
-            motor_interface(motor_command); // disable
-            cleaner_command = 1; // off
-            cleaner_interface(cleaner_command);
+            // motor_interface(motor_command); // disable
+            // cleaner_command = 1; // off
+            // cleaner_interface(cleaner_command);
 
             if (obstacle_location[1] == 0) { // obstacle_location[2] == 1 우 장애물 or obstacle_location[2] == 0) -> 왼쪽 회전
-                motor_command = turn_left();
-                motor_interface(motor_command); // left
+                // motor_command = turn_left();
+                // motor_interface(motor_command); // left
             }
             else if (obstacle_location[1] == 1 && obstacle_location[2] == 0) { // 좌 장애물, 우 장애물 X -> 오른 쪽 회전
-                motor_command = turn_right();
-                motor_interface(motor_command); // right
+                // motor_command = turn_right();
+                // motor_interface(motor_command); // right
             }
             else if (obstacle_location[1] == 1 && obstacle_location[2] == 1) { // 좌, 우 장애물 -> 뒤로 이동
-                motor_command = move_backward();
-                motor_interface(motor_command); // move_backward
-                motor_command = -1; // disable
-                motor_interface(motor_command); // 정지
+                // motor_command = move_backward();
+                // motor_interface(motor_command); // move_backward
+                // motor_command = -1; // disable
+                // motor_interface(motor_command); // 정지
 
-                f = 1; // 앞에 장애물 있다고 고정. 없어도 됨 차피 안씀
-                l = left_sensor_interface();
-                r = right_sensor_interface();
-                determine_obstacle_location(*obstacle_location, f, l, r);
+                // f = 1; // 앞에 장애물 있다고 고정. 없어도 됨 차피 안씀
+                // l = left_sensor_interface();
+                // r = right_sensor_interface();
+                // determine_obstacle_location(*obstacle_location, f, l, r);
 
                 if (obstacle_location[1] == 0 && obstacle_location[2] == 0) { // 좌, 우 장애물 없음 -> 왼쪽 회전 or 우만 장애물 -> 왼쪽 회전
-                    motor_command = turn_left();
-                    motor_interface(motor_command); // left
+                    // motor_command = turn_left();
+                    // motor_interface(motor_command); // left
                 }
                 else if (obstacle_location[1] == 1 && obstacle_location[2] == 1) { // 장애물 없음 -> 왼쪽 회전
-                    motor_command = turn_left();
-                    motor_interface(motor_command); // left
+                    // motor_command = turn_left();
+                    // motor_interface(motor_command); // left
                 }
                 else if (obstacle_location[1] == 1 && obstacle_location[2] == 0) { // 좌만 장애물 -> 오른쪽 회전
-                    motor_command = turn_right();
-                    motor_interface(motor_command); // right
+                    // motor_command = turn_right();
+                    // motor_interface(motor_command); // right
                 }
             }
         }
         else { // 앞에 장애물이 없는 경우 + motor_command 오류
-            motor_command = 0; // enable
-            motor_interface(motor_command);
-            cleaner_command = 0; // on
-            cleaner_interface(cleaner_command);
+            // motor_command = 0; // enable
+            // motor_interface(motor_command);
+            // cleaner_command = 0; // on
+            // cleaner_interface(cleaner_command);
             if (dust_existence[0] == 1) {
-                cleaner_command = 2; // up
-                cleaner_interface(cleaner_command);
+                // cleaner_command = 2; // up
+                // cleaner_interface(cleaner_command);
             }
         }
 

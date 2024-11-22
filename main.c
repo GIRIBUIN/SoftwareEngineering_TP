@@ -5,7 +5,7 @@
 #include <time.h>
 
 void determine_obstacle_location(int* obstacle_location, int f, int l, int r) {
-    // interface È£ÃâÇØ¼­ ¹è¿­¿¡ ÀúÀå
+    // interface í˜¸ì¶œí•´ì„œ ë°°ì—´ì— ì €ì¥
 }
 
 void determine_dust_existence(int* dust_existence, int d) {
@@ -13,76 +13,76 @@ void determine_dust_existence(int* dust_existence, int d) {
 }
 
 int front_sensor_interface() {
-    // ·£´ı °ª »ı¼º
+    // ëœë¤ ê°’ ìƒì„±
 }
 
 int left_sensor_interface() {
-    // ·£´ı °ª »ı¼º
+    // ëœë¤ ê°’ ìƒì„±
 }
 
 int right_sensor_interface() {
-    // ·£´ı °ª »ı¼º
+    // ëœë¤ ê°’ ìƒì„±
 }
 
 int dust_sensor_interface() {
-    // ·£´ı °ª »ı¼º
+    // ëœë¤ ê°’ ìƒì„±
 }
 
 
 int move_forward(int* is_forward) {
     int motor_command = -10e9;
-    // ¹è¿­ 0¹ø ÀÎµ¦½º ¾Õ ¿©ºÎ, 1¹ø ÀÎµ¦½º µÚ ¿©ºÎ ÆÇ´Ü command ¹İÈ¯
+    // ë°°ì—´ 0ë²ˆ ì¸ë±ìŠ¤ ì• ì—¬ë¶€, 1ë²ˆ ì¸ë±ìŠ¤ ë’¤ ì—¬ë¶€ íŒë‹¨ command ë°˜í™˜
 
     return motor_command;
 }
 
 int turn_left() {
     int motor_command = -10e9;
-    // trigger ¹ß»ı ½Ã¿¡¸¸ È£ÃâµÇ´Â ÇÔ¼ö
+    // trigger ë°œìƒ ì‹œì—ë§Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
 
     return motor_command;
 }
 
 int turn_right() {
     int motor_command = -10e9;
-    // trigger ¹ß»ı ½Ã¿¡¸¸ È£ÃâµÇ´Â ÇÔ¼ö
+    // trigger ë°œìƒ ì‹œì—ë§Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
 
     return motor_command;
 }
 
 int move_backward() {
     int motor_command = -10e9;
-    // trigger ¹ß»ı ½Ã¿¡¸¸ È£ÃâµÇ´Â ÇÔ¼ö
+    // trigger ë°œìƒ ì‹œì—ë§Œ í˜¸ì¶œë˜ëŠ” í•¨ìˆ˜
 
     return motor_command;
 }
 
 void motor_interface(int motor_command) {
-    // motor command¿¡ µû¸¥ Ãâ·Â
+    // motor commandì— ë”°ë¥¸ ì¶œë ¥
 }
 
 int power(int is_power) {
     int cleaner_command = -10e9;
-    // is_power(on/off/up)¿¡ µû¸¥ command ¹İÈ¯
+    // is_power(on/off/up)ì— ë”°ë¥¸ command ë°˜í™˜
 
     return cleaner_command;
 }
 
 void cleaner_interface(int cleaner_command) {
-    // command¿¡ µû¸¥ Ãâ·Â
+    // commandì— ë”°ë¥¸ ì¶œë ¥
 }
 
 int divider(int* is_forward, int cleaner_command) {
-    // 2°³ µ¿ÀÛ ¼öÇàÇØ¾ßÇÒ ¶§ È£Ãâ
+    // 2ê°œ ë™ì‘ ìˆ˜í–‰í•´ì•¼í•  ë•Œ í˜¸ì¶œ
 
 }
 
-void stop(int motor_command, int cleaner_command) {
-    printf("stop>> motor_command : %d, cleaner_command : %d\n", motor_command, cleaner_command);
+void stop() {
+    printf("stop>> motor_command : DISABLE, cleaner_command : OFF\n");
     // disable MoveForward
-    motor_interface(motor_command);
+    motor_interface(-1);
     // Cleaner Command(OFF)
-    cleaner_interface(cleaner_command);
+    cleaner_interface(1);
 }
 
 void controller() {
@@ -93,9 +93,8 @@ void controller() {
     int motor_command = -1; // disable
     int cleaner_command = 1; // off
 
-    stop(motor_command, cleaner_command);
-
     while (1) {
+        stop();
         f = front_sensor_interface();
         l = left_sensor_interface();
         r = right_sensor_interface();
@@ -105,45 +104,45 @@ void controller() {
         motor_command = obstacle_location[0] == 1 ? -1 : 0;
         determine_dust_existence(*dust_existence, d);
 
-        if (motor_command == -1) { // ¾Õ¿¡ Àå¾Ö¹°ÀÌ ÀÖ´Â °æ¿ì
+        if (motor_command == -1) { // ì•ì— ì¥ì• ë¬¼ì´ ìˆëŠ” ê²½ìš°
             motor_interface(motor_command); // disable
             cleaner_command = 1; // off
             cleaner_interface(cleaner_command);
 
-            if (obstacle_location[1] == 0) { // obstacle_location[2] == 1 ¿ì Àå¾Ö¹° or obstacle_location[2] == 0) -> ¿ŞÂÊ È¸Àü
+            if (obstacle_location[1] == 0) { // obstacle_location[2] == 1 ìš° ì¥ì• ë¬¼ or obstacle_location[2] == 0) -> ì™¼ìª½ íšŒì „
                 motor_command = turn_left();
                 motor_interface(motor_command); // left
             }
-            else if (obstacle_location[1] == 1 && obstacle_location[2] == 0) { // ÁÂ Àå¾Ö¹°, ¿ì Àå¾Ö¹° X -> ¿À¸¥ ÂÊ È¸Àü
+            else if (obstacle_location[1] == 1 && obstacle_location[2] == 0) { // ì¢Œ ì¥ì• ë¬¼, ìš° ì¥ì• ë¬¼ X -> ì˜¤ë¥¸ ìª½ íšŒì „
                 motor_command = turn_right();
                 motor_interface(motor_command); // right
             }
-            else if (obstacle_location[1] == 1 && obstacle_location[2] == 1) { // ÁÂ, ¿ì Àå¾Ö¹° -> µÚ·Î ÀÌµ¿
+            else if (obstacle_location[1] == 1 && obstacle_location[2] == 1) { // ì¢Œ, ìš° ì¥ì• ë¬¼ -> ë’¤ë¡œ ì´ë™
                 motor_command = move_backward();
                 motor_interface(motor_command); // move_backward
                 motor_command = -1; // disable
-                motor_interface(motor_command); // Á¤Áö
+                motor_interface(motor_command); // ì •ì§€
 
-                f = 1; // ¾Õ¿¡ Àå¾Ö¹° ÀÖ´Ù°í °íÁ¤. ¾ø¾îµµ µÊ Â÷ÇÇ ¾È¾¸
+                f = 1; // ì•ì— ì¥ì• ë¬¼ ìˆë‹¤ê³  ê³ ì •. ì—†ì–´ë„ ë¨ ì°¨í”¼ ì•ˆì”€
                 l = left_sensor_interface();
                 r = right_sensor_interface();
                 determine_obstacle_location(*obstacle_location, f, l, r);
 
-                if (obstacle_location[1] == 0 && obstacle_location[2] == 0) { // ÁÂ, ¿ì Àå¾Ö¹° ¾øÀ½ -> ¿ŞÂÊ È¸Àü or ¿ì¸¸ Àå¾Ö¹° -> ¿ŞÂÊ È¸Àü
+                if (obstacle_location[1] == 0 && obstacle_location[2] == 0) { // ì¢Œ, ìš° ì¥ì• ë¬¼ ì—†ìŒ -> ì™¼ìª½ íšŒì „ or ìš°ë§Œ ì¥ì• ë¬¼ -> ì™¼ìª½ íšŒì „
                     motor_command = turn_left();
                     motor_interface(motor_command); // left
                 }
-                else if (obstacle_location[1] == 1 && obstacle_location[2] == 1) { // Àå¾Ö¹° ¾øÀ½ -> ¿ŞÂÊ È¸Àü
+                else if (obstacle_location[1] == 1 && obstacle_location[2] == 1) { // ì¥ì• ë¬¼ ì—†ìŒ -> ì™¼ìª½ íšŒì „
                     motor_command = turn_left();
                     motor_interface(motor_command); // left
                 }
-                else if (obstacle_location[1] == 1 && obstacle_location[2] == 0) { // ÁÂ¸¸ Àå¾Ö¹° -> ¿À¸¥ÂÊ È¸Àü
+                else if (obstacle_location[1] == 1 && obstacle_location[2] == 0) { // ì¢Œë§Œ ì¥ì• ë¬¼ -> ì˜¤ë¥¸ìª½ íšŒì „
                     motor_command = turn_right();
                     motor_interface(motor_command); // right
                 }
             }
         }
-        else { // ¾Õ¿¡ Àå¾Ö¹°ÀÌ ¾ø´Â °æ¿ì + motor_command ¿À·ù
+        else { // ì•ì— ì¥ì• ë¬¼ì´ ì—†ëŠ” ê²½ìš° + motor_command ì˜¤ë¥˜
             motor_command = 0; // enable
             motor_interface(motor_command);
             cleaner_command = 0; // on
@@ -159,7 +158,7 @@ void controller() {
 
 int main(void) {
     srand(time(NULL));
-    printf("RVCÀÇ Àü¿øÀÌ ÄÑÁ³½À´Ï´Ù.\n");
+    printf("RVCì˜ ì „ì›ì´ ì¼œì¡ŒìŠµë‹ˆë‹¤.\n");
     controller();
     return 0;
 }

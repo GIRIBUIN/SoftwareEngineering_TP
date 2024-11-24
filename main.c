@@ -101,11 +101,17 @@ void motor_interface(int motor_command) {
     }
 }
 
-int move_forward(int* is_forward) {
-    int motor_command = -10e9;
-    // 배열 0번 인덱스 앞 여부, 1번 인덱스 뒤 여부 판단 command 반환
+void move_forward(int* is_forward) {
+    printf("move_forward get (enable : %d, disable : %d)\n", is_forward[ENABLE], is_forward[DISABLE]);
 
-    return motor_command;
+    if (is_forward[ENABLE] == 1) {
+        return motor_interface(FORWARD);
+    }
+    else if (is_forward[DISABLE] == 1) {
+        return motor_interface(STOP);
+    }
+
+    fprintf(stderr, "Move_forward: Invalid Param (Enable 과 Disable 중 하나는 반드시 1이어야 함.)\n");
 }
 
 void turn_left(int trigger) {
@@ -117,7 +123,6 @@ void turn_left(int trigger) {
     }
     else {
         fprintf(stderr, "An invalid trigger has occurred.\n");
-        return -1;
     }
 }
 
@@ -145,12 +150,6 @@ void move_backward(int trigger) {
     }
 }
 
-int power(int is_power) {
-    int cleaner_command = -10e9;
-    // is_power(on/off/up)에 따른 command 반환
-
-    return cleaner_command;
-}
 
 void cleaner_interface(int cleaner_command) {
     // command에 따른 출력
@@ -169,7 +168,15 @@ void cleaner_interface(int cleaner_command) {
     }
 }
 
+void power(int is_power) {
+    printf("power get %d\n", is_power);
+
+    // is_power(on/off/up)에 따른 command 반환
+    return cleaner_interface(is_power);
+}
+
 int divider(int* is_forward, int cleaner_state) {
+    printf("divider get (is_forward: (%d, %d), cleaner_state: %d)\n", is_forward[ENABLE], is_forward[DISABLE], cleaner_state);
     // 2개 동작 수행해야할 때 호출
     move_forward(is_forward);
     power(cleaner_state);

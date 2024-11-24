@@ -162,9 +162,10 @@ void cleaner_interface(int cleaner_command) {
     }
 }
 
-int divider(int* is_forward, int cleaner_command) {
+int divider(int* is_forward, int cleaner_state) {
     // 2개 동작 수행해야할 때 호출
-
+    move_forward(is_forward);
+    power(state);
 }
 
 void stop() {

@@ -280,7 +280,7 @@ void controller() {
                 if (data.trigger[LEFT_TRIGGER] == 1) {
                     int count = 1;
                     turn_left(data.trigger[LEFT_TRIGGER]); // 일단 회전
-                    while (1) { // 3틱 좌회전
+                    while (count < 6) { // 3틱 좌회전
                         current_time = time(NULL);
                         if (difftime(current_time, last_third_time) >= tick) {
                             last_third_time = current_time;
@@ -290,7 +290,6 @@ void controller() {
                             printf("RVC 왼쪽으로 회전 중입니다... %ds\n", count);
                             power(OFF);
                             turn_left(data.trigger[LEFT_TRIGGER]); // 쓸거면 고정하고 써야함
-                            if (count > 4) break;
                             count++;
                         }
                     }
@@ -298,7 +297,7 @@ void controller() {
                 else if (data.trigger[RIGHT_TRIGGER] == 1) {
                     int count = 1;
                     turn_right(data.trigger[RIGHT_TRIGGER]); // 일단 회전
-                    while (1) {
+                    while (count < 6) {
                         current_time = time(NULL);
                         if (difftime(current_time, last_third_time) >= tick) {
                             last_third_time = current_time;
@@ -308,7 +307,6 @@ void controller() {
                             printf("RVC 오른쪽으로 회전 중입니다... %ds\n", count);
                             power(OFF);
                             turn_right(data.trigger[RIGHT_TRIGGER]); // 쓸거면 고정하고 써야함
-                            if (count > 4) break;
                             count++;
                         }
                     }
@@ -319,7 +317,7 @@ void controller() {
                 if (data.trigger[LEFT_TRIGGER] == 1) {
                     int count = 1;
                     turn_left(data.trigger[LEFT_TRIGGER]); // 일단 회전
-                    while (1) {
+                    while (count < 6) {
                         current_time = time(NULL);
                         if (difftime(current_time, last_third_time) >= tick) {
                             last_third_time = current_time;
@@ -329,7 +327,6 @@ void controller() {
                             printf("RVC 왼쪽으로 회전 중입니다... %ds\n", count);
                             power(OFF);
                             turn_left(data.trigger[LEFT_TRIGGER]); // 쓸거면 고정하고 써야함
-                            if (count > 4) break;
                             count++;
                         }
                     }
@@ -337,7 +334,7 @@ void controller() {
                 else if (data.trigger[RIGHT_TRIGGER] == 1) {
                     int count = 1;
                     turn_right(data.trigger[RIGHT_TRIGGER]); // 일단 회전
-                    while (1) {
+                    while (count < 6) {
                         current_time = time(NULL);
                         if (difftime(current_time, last_third_time) >= tick) {
                             last_third_time = current_time;
@@ -347,7 +344,6 @@ void controller() {
                             printf("RVC 오른쪽으로 회전 중입니다... %ds\n", count);
                             power(OFF);
                             turn_right(data.trigger[RIGHT_TRIGGER]); // 쓸거면 고정하고 써야함
-                            if (count > 4) break;
                             count++;
                         }
                     }
@@ -472,7 +468,7 @@ void controller() {
                     if (data.trigger[LEFT_TRIGGER] == 1) {
                         int count = 1;
                         turn_left(data.trigger[LEFT_TRIGGER]); // 일단 회전
-                        while (1) { // 3틱 좌회전
+                        while (count < 6) { // 3틱 좌회전
                             current_time = time(NULL);
                             if (difftime(current_time, last_third_time) >= tick) {
                                 last_third_time = current_time;
@@ -482,7 +478,6 @@ void controller() {
                                 printf("RVC 왼쪽으로 회전 중입니다... %ds\n", count);
                                 power(OFF);
                                 turn_left(data.trigger[LEFT_TRIGGER]); // 쓸거면 고정하고 써야함
-                                if (count > 4) break;
                                 count++;
                             }
                         }
@@ -490,7 +485,7 @@ void controller() {
                     else if (data.trigger[RIGHT_TRIGGER] == 1) {
                         int count = 1;
                         turn_right(data.trigger[RIGHT_TRIGGER]); // 일단 회전
-                        while (1) {
+                        while (count < 6) {
                             current_time = time(NULL);
                             if (difftime(current_time, last_third_time) >= tick) {
                                 last_third_time = current_time;
@@ -500,7 +495,6 @@ void controller() {
                                 printf("RVC 오른쪽으로 회전 중입니다... %ds\n", count);
                                 power(OFF);
                                 turn_right(data.trigger[RIGHT_TRIGGER]); // 쓸거면 고정하고 써야함
-                                if (count > 4) break;
                                 count++;
                             }
                         }
@@ -511,7 +505,7 @@ void controller() {
                     if (data.trigger[LEFT_TRIGGER] == 1) {
                         int count = 1;
                         turn_left(data.trigger[LEFT_TRIGGER]); // 일단 회전
-                        while (1) {
+                        while (count < 6) {
                             current_time = time(NULL);
                             if (difftime(current_time, last_third_time) >= tick) {
                                 last_third_time = current_time;
@@ -521,7 +515,6 @@ void controller() {
                                 printf("RVC 왼쪽으로 회전 중입니다... %ds\n", count);
                                 power(OFF);
                                 turn_left(data.trigger[LEFT_TRIGGER]); // 쓸거면 고정하고 써야함
-                                if (count > 4) break;
                                 count++;
                             }
                         }
@@ -529,7 +522,7 @@ void controller() {
                     else if (data.trigger[RIGHT_TRIGGER] == 1) {
                         int count = 1;
                         turn_right(data.trigger[RIGHT_TRIGGER]); // 일단 회전
-                        while (1) {
+                        while (count < 6) {
                             current_time = time(NULL);
                             if (difftime(current_time, last_third_time) >= tick) {
                                 last_third_time = current_time;
@@ -539,7 +532,6 @@ void controller() {
                                 printf("RVC 오른쪽으로 회전 중입니다... %ds\n", count);
                                 power(OFF);
                                 turn_right(data.trigger[RIGHT_TRIGGER]); // 쓸거면 고정하고 써야함
-                                if (count > 4) break;
                                 count++;
                             }
                         }

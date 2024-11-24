@@ -34,21 +34,28 @@ typedef struct {
     int r;
     int d;
     int trigger[3]; // l, r, b
-    int obstacle_location[3]; // f, l, r
+    int* obstacle_location; // f, l, r
     int dust_existence[1]; // d
     int is_forward[2]; // enable, disable
 } Sensor;
 
 
-void determine_obstacle_location(int* obstacle_location, int f, int l, int r) {
+int* determine_obstacle_location() {
+    static int obstacle_location[3] = { 0 };
+    int f = front_sensor_interface();
+    int l = left_sensor_interface();
+    int r = right_sensor_interface();
+
     obstacle_location[0] = f; // 앞 센서 값
     obstacle_location[1] = l; // 왼쪽 센서 값
     obstacle_location[2] = r; // 오른쪽 센서 값
+    return obstacle_location;
 }
 
 
-void determine_dust_existence(int* dust_existence, int d) {
-    *dust_existence = d; // 먼지 센서 값
+int determine_dust_existence() {
+    int d = dust_sensor_interface();
+    return d;
 }
 
 // 앞 센서 인터페이스
@@ -74,23 +81,23 @@ int dust_sensor_interface() {
 void motor_interface(int motor_command) {
     // motor command에 따른 출력
     switch (motor_command) {
-        case STOP:
-            printf("Motor: Stop\n");
-            break;
-        case FORWARD:
-            printf("Motor: Move Forward\n");
-            break;
-        case LEFT:
-            printf("Motor: Turn Left\n");
-            break;
-        case RIGHT:
-            printf("Motor: Turn Right\n");
-            break;
-        case BACKWARD:
-            printf("Motor: Move Backward\n");
-            break;
-        default:
-            fprintf(stderr, "Motor: Invalid Command (%d)\n", motor_command);
+    case STOP:
+        printf("Motor: Stop\n");
+        break;
+    case FORWARD:
+        printf("Motor: Move Forward\n");
+        break;
+    case LEFT:
+        printf("Motor: Turn Left\n");
+        break;
+    case RIGHT:
+        printf("Motor: Turn Right\n");
+        break;
+    case BACKWARD:
+        printf("Motor: Move Backward\n");
+        break;
+    default:
+        fprintf(stderr, "Motor: Invalid Command (%d)\n", motor_command);
     }
 }
 
@@ -148,24 +155,24 @@ int power(int is_power) {
 void cleaner_interface(int cleaner_command) {
     // command에 따른 출력
     switch (cleaner_command) {
-        case OFF:
-            printf("Cleaner: Power Off\n");
-            break;
-        case ON:
-            printf("Cleaner: Power On\n");
-            break;
-        case UP:
-            printf("Cleaner: Power Up (Boost Mode)\n");
-            break;
-        default:
-            fprintf(stderr, "Cleaner: Invalid Command (%d)\n", cleaner_command);
+    case OFF:
+        printf("Cleaner: Power Off\n");
+        break;
+    case ON:
+        printf("Cleaner: Power On\n");
+        break;
+    case UP:
+        printf("Cleaner: Power Up (Boost Mode)\n");
+        break;
+    default:
+        fprintf(stderr, "Cleaner: Invalid Command (%d)\n", cleaner_command);
     }
 }
 
 int divider(int* is_forward, int cleaner_state) {
     // 2개 동작 수행해야할 때 호출
     move_forward(is_forward);
-    power(state);
+    power(cleaner_state);
 }
 
 void stop() {
@@ -177,36 +184,19 @@ void initialization(Sensor* d) {
     for (int i = 0; i < 3; i++) {
         d->trigger[i] = 0;
     }
-    d->f = front_sensor_interface();
-    d->l = left_sensor_interface();
-    d->r = right_sensor_interface();
-    d->d = dust_sensor_interface();
-
-    for (int i = 0; i < 3; i++) {
-        d->obstacle_location[i] = 0;
-    }
-
     d->dust_existence[0] = 0;
 }
 
-void update_sensor_data(Sensor* data) {
-    initialization(data);
-    determine_obstacle_location(data->obstacle_location, data->f, data->l, data->r);
-    determine_dust_existence(data->dust_existence, data->d);
-}
 
 
 void controller() {
     Sensor data;
-    int motor_command = STOP;
-    int cleaner_command = OFF;
     int tick = 1;
     data.is_forward[ENABLE] = 0;
     data.is_forward[DISABLE] = 1;
 
     // 처음 작동시 해야할 것
-    move_forward(data.is_forward);  // disable MoveForward
-    power(1); // Cleaner Command(OFF)
+    divider(data.is_forward, OFF);
     stop();
     // 첫 번째 시간 저장 (현재 시간으로 초기화)
     time_t current_time;
@@ -217,13 +207,15 @@ void controller() {
 
 
     while (1) { // 전체 사이클을 반복
-        
+
         last_first_time = time(NULL);
         while (1) { // 1틱 stop -> turn or MoveForward
             current_time = time(NULL);
             if (difftime(current_time, last_first_time) >= tick) {
                 last_first_time = current_time;
-                update_sensor_data(&data);
+                initialization(&data);
+                data.obstacle_location = determine_obstacle_location();
+                data.dust_existence[0] = determine_dust_existence();
 
                 if (data.obstacle_location[F] == 1) { // 앞에 장애물이 있는 경우 -> Turn
                     power(OFF);
@@ -233,8 +225,7 @@ void controller() {
                 else { // 앞에 장애물이 없는 경우 + motor_command 오류
                     data.is_forward[ENABLE] = 1; // enable : true
                     data.is_forward[DISABLE] = 0; // disable : false
-                    move_forward(data.is_forward);
-                    power(ON);
+                    divider(data.is_forward, ON);
                     printf("MoveForward에 진입합니다.\n");
                     break;
                 }
@@ -247,7 +238,9 @@ void controller() {
                 current_time = time(NULL);
                 if (difftime(current_time, last_second_time) >= tick) {
                     last_second_time = current_time;
-                    update_sensor_data(&data);
+                    initialization(&data);
+                    data.obstacle_location = determine_obstacle_location();
+                    data.dust_existence[0] = determine_dust_existence();
                     data.obstacle_location[0] = 1; // dfd 처럼 할려면 f 고정하고 해야할듯
 
                     if (data.obstacle_location[F] == 1 && data.obstacle_location[L] == 0) { // obstacle_location[2] == 1 우 장애물 or obstacle_location[2] == 0) -> 왼쪽 회전
@@ -281,7 +274,9 @@ void controller() {
                     current_time = time(NULL);
                     if (difftime(current_time, last_time) >= tick) {
                         last_time = current_time;
-                        update_sensor_data(&data);
+                        initialization(&data);
+                        data.obstacle_location = determine_obstacle_location();
+                        data.dust_existence[0] = determine_dust_existence();
 
                         if (data.obstacle_location[L] == 0) { // 좌, 우 장애물 없음 -> 왼쪽 회전 or 우만 장애물 -> 왼쪽 회전
                             printf("뒤로 이동 중... RVC가 왼쪽으로 회전해야 합니다. 왼쪽 장애물 유무 %d 오른쪽 장애물 유무 %d\n", data.obstacle_location[L], data.obstacle_location[R]);
@@ -312,15 +307,17 @@ void controller() {
                 last_third_time = time(NULL);
                 if (data.trigger[LEFT_TRIGGER] == 1) {
                     int count = 1;
-                    turn_left(data.trigger[LEFT_TRIGGER]); // 일단 회전
+                    // turn_left(data.trigger[LEFT_TRIGGER]); // 일단 회전
                     while (count < 6) { // 3틱 좌회전
                         current_time = time(NULL);
                         if (difftime(current_time, last_third_time) >= tick) {
                             last_third_time = current_time;
-                            update_sensor_data(&data);
+                            initialization(&data);
+                            data.obstacle_location = determine_obstacle_location();
+                            data.dust_existence[0] = determine_dust_existence();
 
                             data.trigger[LEFT_TRIGGER] = 1;
-                            printf("RVC 왼쪽으로 회전 중입니다... %ds\n", count);
+                            printf("RVC 왼쪽으로 회전 중입니다... %d tick\n", count);
                             power(OFF);
                             turn_left(data.trigger[LEFT_TRIGGER]); // 쓸거면 고정하고 써야함
                             count++;
@@ -329,15 +326,17 @@ void controller() {
                 }
                 else if (data.trigger[RIGHT_TRIGGER] == 1) {
                     int count = 1;
-                    turn_right(data.trigger[RIGHT_TRIGGER]); // 일단 회전
+                    // turn_right(data.trigger[RIGHT_TRIGGER]); // 일단 회전
                     while (count < 6) {
                         current_time = time(NULL);
                         if (difftime(current_time, last_third_time) >= tick) {
                             last_third_time = current_time;
-                            update_sensor_data(&data);
+                            initialization(&data);
+                            data.obstacle_location = determine_obstacle_location();
+                            data.dust_existence[0] = determine_dust_existence();
 
                             data.trigger[RIGHT_TRIGGER] = 1;
-                            printf("RVC 오른쪽으로 회전 중입니다... %ds\n", count);
+                            printf("RVC 오른쪽으로 회전 중입니다... %d tick\n", count);
                             power(OFF);
                             turn_right(data.trigger[RIGHT_TRIGGER]); // 쓸거면 고정하고 써야함
                             count++;
@@ -349,15 +348,17 @@ void controller() {
                 last_third_time = time(NULL);
                 if (data.trigger[LEFT_TRIGGER] == 1) {
                     int count = 1;
-                    turn_left(data.trigger[LEFT_TRIGGER]); // 일단 회전
+                    // turn_left(data.trigger[LEFT_TRIGGER]); // 일단 회전
                     while (count < 6) {
                         current_time = time(NULL);
                         if (difftime(current_time, last_third_time) >= tick) {
                             last_third_time = current_time;
-                            update_sensor_data(&data);
+                            initialization(&data);
+                            data.obstacle_location = determine_obstacle_location();
+                            data.dust_existence[0] = determine_dust_existence();
 
                             data.trigger[LEFT_TRIGGER] = 1;
-                            printf("RVC 왼쪽으로 회전 중입니다... %ds\n", count);
+                            printf("RVC 왼쪽으로 회전 중입니다... %d tick\n", count);
                             power(OFF);
                             turn_left(data.trigger[LEFT_TRIGGER]); // 쓸거면 고정하고 써야함
                             count++;
@@ -366,15 +367,17 @@ void controller() {
                 }
                 else if (data.trigger[RIGHT_TRIGGER] == 1) {
                     int count = 1;
-                    turn_right(data.trigger[RIGHT_TRIGGER]); // 일단 회전
+                    // turn_right(data.trigger[RIGHT_TRIGGER]); // 일단 회전
                     while (count < 6) {
                         current_time = time(NULL);
                         if (difftime(current_time, last_third_time) >= tick) {
                             last_third_time = current_time;
-                            update_sensor_data(&data);
+                            initialization(&data);
+                            data.obstacle_location = determine_obstacle_location();
+                            data.dust_existence[0] = determine_dust_existence();
 
                             data.trigger[RIGHT_TRIGGER] = 1;
-                            printf("RVC 오른쪽으로 회전 중입니다... %ds\n", count);
+                            printf("RVC 오른쪽으로 회전 중입니다... %d tick\n", count);
                             power(OFF);
                             turn_right(data.trigger[RIGHT_TRIGGER]); // 쓸거면 고정하고 써야함
                             count++;
@@ -389,13 +392,13 @@ void controller() {
                 current_time = time(NULL);
                 if (difftime(current_time, last_second_time) >= tick) {
                     last_first_time = current_time;
-                    update_sensor_data(&data);
-
+                    initialization(&data);
+                    data.obstacle_location = determine_obstacle_location();
+                    data.dust_existence[0] = determine_dust_existence();
                     if (data.obstacle_location[F] == 1) { // 앞에 장애물이 있는 경우 -> Turn
-                        power(OFF);
                         data.is_forward[ENABLE] = 0; // enable : false
                         data.is_forward[DISABLE] = 1; // disable : ture
-                        move_forward(data.is_forward);
+                        divider(data.is_forward, OFF);
 
                         printf("Turn을 해야 합니다.\n");
                         break;
@@ -406,13 +409,14 @@ void controller() {
                             current_time = time(NULL);
                             if (difftime(current_time, last_time) >= tick) {
                                 last_time = current_time;
-                                update_sensor_data(&data);
+                                initialization(&data);
+                                data.obstacle_location = determine_obstacle_location();
+                                data.dust_existence[0] = determine_dust_existence();
 
                                 if (data.obstacle_location[F] == 1) { // 앞에 장애물 있음
-                                    power(OFF);
                                     data.is_forward[ENABLE] = 0; // enable : false
                                     data.is_forward[DISABLE] = 1; // disable : ture
-                                    move_forward(data.is_forward);
+                                    divider(data.is_forward, OFF);
                                     printf("RVC 청소 중 장애물 발견 Turn을 해야 합니다.\n");
                                     break;
                                 }
@@ -435,7 +439,9 @@ void controller() {
                     current_time = time(NULL);
                     if (difftime(current_time, last_second_time) >= tick) {
                         last_second_time = current_time;
-                        update_sensor_data(&data);
+                        initialization(&data);
+                        data.obstacle_location = determine_obstacle_location();
+                        data.dust_existence[0] = determine_dust_existence();
                         data.obstacle_location[F] = 1; // dfd 처럼 할려면 f 고정하고 해야할듯
 
                         if (data.obstacle_location[F] == 1 && data.obstacle_location[L] == 0) { // obstacle_location[2] == 1 우 장애물 or obstacle_location[2] == 0) -> 왼쪽 회전
@@ -469,7 +475,9 @@ void controller() {
                         current_time = time(NULL);
                         if (difftime(current_time, last_time) >= tick) {
                             last_time = current_time;
-                            update_sensor_data(&data);
+                            initialization(&data);
+                            data.obstacle_location = determine_obstacle_location();
+                            data.dust_existence[0] = determine_dust_existence();
 
                             if (data.obstacle_location[L] == 0) { // 좌, 우 장애물 없음 -> 왼쪽 회전 or 우만 장애물 -> 왼쪽 회전
                                 printf("뒤로 이동 중... RVC가 왼쪽으로 회전해야 합니다. 왼쪽 장애물 유무 %d 오른쪽 장애물 유무 %d\n", data.obstacle_location[1], data.obstacle_location[2]);
@@ -500,15 +508,17 @@ void controller() {
                     last_third_time = time(NULL);
                     if (data.trigger[LEFT_TRIGGER] == 1) {
                         int count = 1;
-                        turn_left(data.trigger[LEFT_TRIGGER]); // 일단 회전
+                        // turn_left(data.trigger[LEFT_TRIGGER]); // 일단 회전
                         while (count < 6) { // 3틱 좌회전
                             current_time = time(NULL);
                             if (difftime(current_time, last_third_time) >= tick) {
                                 last_third_time = current_time;
-                                update_sensor_data(&data);
+                                initialization(&data);
+                                data.obstacle_location = determine_obstacle_location();
+                                data.dust_existence[0] = determine_dust_existence();
 
                                 data.trigger[LEFT_TRIGGER] = 1;
-                                printf("RVC 왼쪽으로 회전 중입니다... %ds\n", count);
+                                printf("RVC 왼쪽으로 회전 중입니다... %d tick\n", count);
                                 power(OFF);
                                 turn_left(data.trigger[LEFT_TRIGGER]); // 쓸거면 고정하고 써야함
                                 count++;
@@ -517,15 +527,17 @@ void controller() {
                     }
                     else if (data.trigger[RIGHT_TRIGGER] == 1) {
                         int count = 1;
-                        turn_right(data.trigger[RIGHT_TRIGGER]); // 일단 회전
+                        // turn_right(data.trigger[RIGHT_TRIGGER]); // 일단 회전
                         while (count < 6) {
                             current_time = time(NULL);
                             if (difftime(current_time, last_third_time) >= tick) {
                                 last_third_time = current_time;
-                                update_sensor_data(&data);
+                                initialization(&data);
+                                data.obstacle_location = determine_obstacle_location();
+                                data.dust_existence[0] = determine_dust_existence();
 
                                 data.trigger[RIGHT_TRIGGER] = 1;
-                                printf("RVC 오른쪽으로 회전 중입니다... %ds\n", count);
+                                printf("RVC 오른쪽으로 회전 중입니다... %d tick\n", count);
                                 power(OFF);
                                 turn_right(data.trigger[RIGHT_TRIGGER]); // 쓸거면 고정하고 써야함
                                 count++;
@@ -537,15 +549,17 @@ void controller() {
                     last_third_time = time(NULL);
                     if (data.trigger[LEFT_TRIGGER] == 1) {
                         int count = 1;
-                        turn_left(data.trigger[LEFT_TRIGGER]); // 일단 회전
+                        // turn_left(data.trigger[LEFT_TRIGGER]); // 일단 회전
                         while (count < 6) {
                             current_time = time(NULL);
                             if (difftime(current_time, last_third_time) >= tick) {
                                 last_third_time = current_time;
-                                update_sensor_data(&data);
+                                initialization(&data);
+                                data.obstacle_location = determine_obstacle_location();
+                                data.dust_existence[0] = determine_dust_existence();
 
                                 data.trigger[LEFT_TRIGGER] = 1;
-                                printf("RVC 왼쪽으로 회전 중입니다... %ds\n", count);
+                                printf("RVC 왼쪽으로 회전 중입니다... %d tick\n", count);
                                 power(OFF);
                                 turn_left(data.trigger[LEFT_TRIGGER]); // 쓸거면 고정하고 써야함
                                 count++;
@@ -554,15 +568,17 @@ void controller() {
                     }
                     else if (data.trigger[RIGHT_TRIGGER] == 1) {
                         int count = 1;
-                        turn_right(data.trigger[RIGHT_TRIGGER]); // 일단 회전
+                        // turn_right(data.trigger[RIGHT_TRIGGER]); // 일단 회전
                         while (count < 6) {
                             current_time = time(NULL);
                             if (difftime(current_time, last_third_time) >= tick) {
                                 last_third_time = current_time;
-                                update_sensor_data(&data);
+                                initialization(&data);
+                                data.obstacle_location = determine_obstacle_location();
+                                data.dust_existence[0] = determine_dust_existence();
 
                                 data.trigger[RIGHT_TRIGGER] = 1;
-                                printf("RVC 오른쪽으로 회전 중입니다... %ds\n", count);
+                                printf("RVC 오른쪽으로 회전 중입니다... %d tick\n", count);
                                 power(OFF);
                                 turn_right(data.trigger[RIGHT_TRIGGER]); // 쓸거면 고정하고 써야함
                                 count++;

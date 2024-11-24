@@ -19,27 +19,34 @@ typedef struct {
 
 
 void determine_obstacle_location(int* obstacle_location, int f, int l, int r) {
-    // interface 호출해서 배열에 저장
+    obstacle_location[0] = f; // 앞 센서 값
+    obstacle_location[1] = l; // 왼쪽 센서 값
+    obstacle_location[2] = r; // 오른쪽 센서 값
 }
+
 
 void determine_dust_existence(int* dust_existence, int d) {
-
+    *dust_existence = d; // 먼지 센서 값
 }
 
+// 앞 센서 인터페이스
 int front_sensor_interface() {
-    // 랜덤 값 생성
+    return rand() % 2; // 0 또는 1 반환 (장애물 존재 여부)
 }
 
+// 왼쪽 센서 인터페이스
 int left_sensor_interface() {
-    // 랜덤 값 생성
+    return rand() % 2; // 0 또는 1 반환 (장애물 존재 여부)
 }
 
+// 오른쪽 센서 인터페이스
 int right_sensor_interface() {
-    // 랜덤 값 생성
+    return rand() % 2; // 0 또는 1 반환 (장애물 존재 여부)
 }
 
+// 먼지 센서 인터페이스
 int dust_sensor_interface() {
-    // 랜덤 값 생성
+    return rand() % 2; // 0 또는 1 반환 (먼지 존재 여부)
 }
 
 void motor_interface(int motor_command) {

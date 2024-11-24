@@ -73,6 +73,25 @@ int dust_sensor_interface() {
 
 void motor_interface(int motor_command) {
     // motor command에 따른 출력
+    switch (motor_command) {
+        case STOP:
+            printf("Motor: Stop\n");
+            break;
+        case FORWARD:
+            printf("Motor: Move Forward\n");
+            break;
+        case LEFT:
+            printf("Motor: Turn Left\n");
+            break;
+        case RIGHT:
+            printf("Motor: Turn Right\n");
+            break;
+        case BACKWARD:
+            printf("Motor: Move Backward\n");
+            break;
+        default:
+            fprintf(stderr, "Motor: Invalid Command (%d)\n", motor_command);
+    }
 }
 
 int move_forward(int* is_forward) {
@@ -128,6 +147,19 @@ int power(int is_power) {
 
 void cleaner_interface(int cleaner_command) {
     // command에 따른 출력
+    switch (cleaner_command) {
+        case OFF:
+            printf("Cleaner: Power Off\n");
+            break;
+        case ON:
+            printf("Cleaner: Power On\n");
+            break;
+        case UP:
+            printf("Cleaner: Power Up (Boost Mode)\n");
+            break;
+        default:
+            fprintf(stderr, "Cleaner: Invalid Command (%d)\n", cleaner_command);
+    }
 }
 
 int divider(int* is_forward, int cleaner_command) {

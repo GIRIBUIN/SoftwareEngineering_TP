@@ -363,7 +363,6 @@ void controller() {
                         initialization(&data);
                         determine_obstacle_location(data.obstacle_location, data.f, data.l, data.r);
                         determine_dust_existence(data.dust_existence, data.d);
-
                         printf("뒤로 이동합니다... %d tick\n", count);
                         power(OFF);
                         data.trigger[BACK_TRIGGER] = 1;
@@ -380,22 +379,15 @@ void controller() {
                         initialization(&data);
                         determine_obstacle_location(data.obstacle_location, data.f, data.l, data.r);
                         determine_dust_existence(data.dust_existence, data.d);
-
-                        if (data.obstacle_location[L] == 0) { // 좌, 우 장애물 없음 -> 왼쪽 회전 or 우만 장애물 -> 왼쪽 회전
-                            printf("뒤로 이동 중... RVC가 왼쪽으로 회전해야 합니다. 왼쪽 장애물 유무 %d 오른쪽 장애물 유무 %d\n", data.obstacle_location[L], data.obstacle_location[R]);
-                            data.trigger[LEFT_TRIGGER] = 1;
-                            power(OFF);
-                            break;
-                        }
-                        else if (data.obstacle_location[L] == 0 && data.obstacle_location[R] == 0) { // 장애물 없음 -> 왼쪽 회전
-                            printf("뒤로 이동 중... RVC가 왼쪽으로 회전해야 합니다. 왼쪽 장애물 유무 %d 오른쪽 장애물 유무 %d\n", data.obstacle_location[L], data.obstacle_location[R]);
-                            data.trigger[LEFT_TRIGGER] = 1;
-                            power(OFF);
-                            break;
-                        }
-                        else if (data.obstacle_location[L] == 1 && data.obstacle_location[R] == 0) { // 좌만 장애물 -> 오른쪽 회전
-                            printf("뒤로 이동 중... RVC가 오른쪽으로 회전해야 합니다. 왼쪽 장애물 유무 %d 오른쪽 장애물 유무 %d\n", data.obstacle_location[L], data.obstacle_location[R]);
+                        
+                        if (data.obstacle_location[L] == 1 && data.obstacle_location[R] == 0) { // 좌만 장애물 -> 오른쪽 회전
+                            printf("뒤로 이동 후... RVC가 오른쪽으로 회전해야 합니다. 왼쪽 장애물 유무 %d 오른쪽 장애물 유무 %d\n", data.obstacle_location[L], data.obstacle_location[R]);
                             data.trigger[RIGHT_TRIGGER] = 1;
+                            power(OFF);
+                            break;
+                        } else {
+                            printf("뒤로 이동 후... RVC가 왼쪽으로 회전해야 합니다. 왼쪽 장애물 유무 %d 오른쪽 장애물 유무 %d\n", data.obstacle_location[L], data.obstacle_location[R]);
+                            data.trigger[LEFT_TRIGGER] = 1;
                             power(OFF);
                             break;
                         }
@@ -490,7 +482,6 @@ void controller() {
                 if (difftime(current_time, last_second_time) >= tick) {
                     last_first_time = current_time;
                     initialization(&data);
-                    printf("here %d %d %d.\n", data.obstacle_location[F], data.obstacle_location[L], data.obstacle_location[R]);
                     determine_obstacle_location(data.obstacle_location, data.f, data.l, data.r);
                     determine_dust_existence(data.dust_existence, data.d);
                     if (data.obstacle_location[F] == 1) { // 앞에 장애물이 있는 경우 -> Turn
@@ -502,7 +493,6 @@ void controller() {
                         break;
                     }
                     else { // 장애물이 없는 경우 moveforward 유지 or 파워 업
-                        printf("here %d %d %d.\n", data.obstacle_location[F], data.obstacle_location[L], data.obstacle_location[R]);
                         if (data.dust_existence[D] == 1) { // 장애물 없고, 먼지 있음
                             power(UP); // up
                         }
@@ -784,39 +774,43 @@ void controller_test() {
             }
 
             if (data.trigger[BACK_TRIGGER] == 1) {
-                move_backward(data.trigger[BACK_TRIGGER]);
+                int count = 1;
                 last_time = time(NULL);
-                while (1) { // 장애물이 없을 때까지 뒤로 이동 틱 계속 증가할 수 있음.
+                while (count < 6) { // 3틱 좌회전
                     current_time = time(NULL);
                     if (difftime(current_time, last_time) >= tick) {
                         last_time = current_time;
-                        initialization_test(&data);
+                        initialization(&data);
+                        determine_obstacle_location(data.obstacle_location, data.f, data.l, data.r);
+                        determine_dust_existence(data.dust_existence, data.d);
+                        printf("뒤로 이동합니다... %d tick\n", count);
+                        power(OFF);
+                        data.trigger[BACK_TRIGGER] = 1;
+                        move_backward(data.trigger[BACK_TRIGGER]);
+                        count++;
+                    }
+                }
+
+                last_time = time(NULL);
+                while (1) {
+                    current_time = time(NULL);
+                    if (difftime(current_time, last_time) >= tick) {
+                        last_time = current_time;
+                        initialization(&data);
                         determine_obstacle_location(data.obstacle_location, data.f, data.l, data.r);
                         determine_dust_existence(data.dust_existence, data.d);
 
-                        if (data.obstacle_location[L] == 0) { // 좌, 우 장애물 없음 -> 왼쪽 회전 or 우만 장애물 -> 왼쪽 회전
-                            printf("뒤로 이동 중... RVC가 왼쪽으로 회전해야 합니다. 왼쪽 장애물 유무 %d 오른쪽 장애물 유무 %d\n", data.obstacle_location[L], data.obstacle_location[R]);
-                            data.trigger[LEFT_TRIGGER] = 1;
-                            power(OFF);
-                            break;
-                        }
-                        else if (data.obstacle_location[L] == 0 && data.obstacle_location[R] == 0) { // 장애물 없음 -> 왼쪽 회전
-                            printf("뒤로 이동 중... RVC가 왼쪽으로 회전해야 합니다. 왼쪽 장애물 유무 %d 오른쪽 장애물 유무 %d\n", data.obstacle_location[L], data.obstacle_location[R]);
-                            data.trigger[LEFT_TRIGGER] = 1;
-                            power(OFF);
-                            break;
-                        }
-                        else if (data.obstacle_location[L] == 1 && data.obstacle_location[R] == 0) { // 좌만 장애물 -> 오른쪽 회전
-                            printf("뒤로 이동 중... RVC가 오른쪽으로 회전해야 합니다. 왼쪽 장애물 유무 %d 오른쪽 장애물 유무 %d\n", data.obstacle_location[L], data.obstacle_location[R]);
+                        if (data.obstacle_location[L] == 1 && data.obstacle_location[R] == 0) { // 좌만 장애물 -> 오른쪽 회전
+                            printf("뒤로 이동 후... RVC가 오른쪽으로 회전해야 합니다. 왼쪽 장애물 유무 %d 오른쪽 장애물 유무 %d\n", data.obstacle_location[L], data.obstacle_location[R]);
                             data.trigger[RIGHT_TRIGGER] = 1;
                             power(OFF);
                             break;
                         }
                         else {
-                            printf("뒤로 이동합니다...\n");
+                            printf("뒤로 이동 후... RVC가 왼쪽으로 회전해야 합니다. 왼쪽 장애물 유무 %d 오른쪽 장애물 유무 %d\n", data.obstacle_location[L], data.obstacle_location[R]);
+                            data.trigger[LEFT_TRIGGER] = 1;
                             power(OFF);
-                            data.trigger[BACK_TRIGGER] = 1;
-                            move_backward(data.trigger[BACK_TRIGGER]);
+                            break;
                         }
                     }
                 }

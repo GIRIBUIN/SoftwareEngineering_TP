@@ -490,6 +490,12 @@ void controller() {
                         break;
                     }
                     else { // 장애물이 없는 경우 moveforward 유지 or 파워 업
+                        if (data.dust_existence[D] == 1) { // 장애물 없고, 먼지 있음
+                            power(UP); // up
+                        }
+                        else {
+                            power(ON); // on
+                        }
                         last_time = time(NULL);
                         while (1) { // 앞에 장애물이 없으면 계속 청소함. 틱 계속 증가할 수 있음.
                             current_time = time(NULL);
@@ -901,6 +907,12 @@ void controller_test() {
                         break;
                     }
                     else { // 장애물이 없는 경우 moveforward 유지 or 파워 업
+                        if (data.dust_existence[D] == 1) { // 장애물 없고, 먼지 있음
+                            power(UP); // up
+                        }
+                        else {
+                            power(ON); // on
+                        }
                         last_time = time(NULL);
                         while (1) { // 앞에 장애물이 없으면 계속 청소함. 틱 계속 증가할 수 있음.
                             current_time = time(NULL);
@@ -1096,7 +1108,7 @@ void controller_test() {
 int main(void) {
     srand(time(NULL));
     printf("RVC의 전원이 켜졌습니다.\n");
-    //controller();
-    controller_test();
+    controller();
+    //controller_test();
     return 0;
 }

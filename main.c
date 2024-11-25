@@ -37,7 +37,7 @@ typedef struct {
     int r;
     int d;
     int trigger[3]; // l, r, b
-    int* obstacle_location[3]; // f, l, r
+    int obstacle_location[3]; // f, l, r
     int dust_existence[1]; // d
     int is_forward[2]; // enable, disable
 } Sensor;
@@ -354,9 +354,26 @@ void controller() {
             }
 
             if (data.trigger[BACK_TRIGGER] == 1) {
-                move_backward(data.trigger[BACK_TRIGGER]);
+                int count = 1;
                 last_time = time(NULL);
-                while (1) { // 장애물이 없을 때까지 뒤로 이동 틱 계속 증가할 수 있음.
+                while (count < 6) { // 3틱 좌회전
+                    current_time = time(NULL);
+                    if (difftime(current_time, last_time) >= tick) {
+                        last_time = current_time;
+                        initialization(&data);
+                        determine_obstacle_location(data.obstacle_location, data.f, data.l, data.r);
+                        determine_dust_existence(data.dust_existence, data.d);
+
+                        printf("뒤로 이동합니다... %d tick\n", count);
+                        power(OFF);
+                        data.trigger[BACK_TRIGGER] = 1;
+                        move_backward(data.trigger[BACK_TRIGGER]);
+                        count++;
+                    }
+                }
+
+                last_time = time(NULL);
+                while (1) {
                     current_time = time(NULL);
                     if (difftime(current_time, last_time) >= tick) {
                         last_time = current_time;
@@ -381,12 +398,6 @@ void controller() {
                             data.trigger[RIGHT_TRIGGER] = 1;
                             power(OFF);
                             break;
-                        }
-                        else {
-                            printf("뒤로 이동합니다...\n");
-                            power(OFF);
-                            data.trigger[BACK_TRIGGER] = 1;
-                            move_backward(data.trigger[BACK_TRIGGER]);
                         }
                     }
                 }
@@ -479,6 +490,7 @@ void controller() {
                 if (difftime(current_time, last_second_time) >= tick) {
                     last_first_time = current_time;
                     initialization(&data);
+                    printf("here %d %d %d.\n", data.obstacle_location[F], data.obstacle_location[L], data.obstacle_location[R]);
                     determine_obstacle_location(data.obstacle_location, data.f, data.l, data.r);
                     determine_dust_existence(data.dust_existence, data.d);
                     if (data.obstacle_location[F] == 1) { // 앞에 장애물이 있는 경우 -> Turn
@@ -490,6 +502,7 @@ void controller() {
                         break;
                     }
                     else { // 장애물이 없는 경우 moveforward 유지 or 파워 업
+                        printf("here %d %d %d.\n", data.obstacle_location[F], data.obstacle_location[L], data.obstacle_location[R]);
                         if (data.dust_existence[D] == 1) { // 장애물 없고, 먼지 있음
                             power(UP); // up
                         }
@@ -889,7 +902,7 @@ void controller_test() {
                 }
             }
         }
-        else { // data.obstacle_location[0] != 1
+        else { // data.obstacle_location[0] == 0 moveforward
             last_second_time = time(NULL);
             while (1) { // 2틱 moveforward
                 current_time = time(NULL);

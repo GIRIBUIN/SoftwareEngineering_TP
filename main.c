@@ -9,6 +9,24 @@
 #define MAX_LINE_LENGTH 100
 FILE* test_file = NULL;
 
+#define ON 0
+#define OFF 1
+#define UP 2
+#define ENABLE 0
+#define DISABLE 1
+#define LEFT_TRIGGER 0
+#define RIGHT_TRIGGER 1
+#define BACK_TRIGGER 2
+#define STOP -1
+#define FORWARD 0
+#define LEFT 1
+#define RIGHT 2
+#define BACKWARD 3
+#define F 0
+#define L 1
+#define R 2
+#define D 0
+
 typedef struct {
     int f;
     int l;
@@ -80,14 +98,35 @@ int dust_sensor_interface() {
 }
 
 void motor_interface(int motor_command) {
-    // motor command에 따른 출력
+    switch (motor_command) {
+    case STOP:
+        printf("Motor: Stop\n");
+        break;
+    case FORWARD:
+        printf("Motor: Move Forward\n");
+        break;
+    case LEFT:
+        printf("Motor: Turn Left\n");
+        break;
+    case RIGHT:
+        printf("Motor: Turn Right\n");
+        break;
+    case BACKWARD:
+        printf("Motor: Move Backward\n");
+        break;
+    default:
+        fprintf(stderr, "Motor: Invalid Command (%d)\n", motor_command);
+    }
 }
-
-int move_forward(int* is_forward) {
-    int motor_command = -10e9;
-    // 배열 0번 인덱스 앞 여부, 1번 인덱스 뒤 여부 판단 command 반환
-
-    return motor_command;
+void move_forward(int* is_forward) {
+    printf("move_forward get (enable : %d, disable : %d)\n", is_forward[ENABLE], is_forward[DISABLE]);
+    if (is_forward[ENABLE] == 1) {
+        return motor_interface(FORWARD);
+    }
+    else if (is_forward[DISABLE] == 1) {
+        return motor_interface(STOP);
+    }
+    fprintf(stderr, "Move_forward: Invalid Param (Enable 과 Disable 중 하나는 반드시 1이어야 함.)\n");
 }
 
 void turn_left(int trigger) {
@@ -127,23 +166,41 @@ void move_backward(int trigger) {
     }
 }
 
-int power(int is_power) {
-    int cleaner_command = -10e9;
-    // is_power(on/off/up)에 따른 command 반환
-
-    return cleaner_command;
-}
-
 void cleaner_interface(int cleaner_command) {
     // command에 따른 출력
+    switch (cleaner_command) {
+    case OFF:
+        printf("Cleaner: Power Off\n");
+        break;
+    case ON:
+        printf("Cleaner: Power On\n");
+        break;
+    case UP:
+        printf("Cleaner: Power Up (Boost Mode)\n");
+        break;
+    default:
+        fprintf(stderr, "Cleaner: Invalid Command (%d)\n", cleaner_command);
+    }
 }
 
-int divider(int* is_forward, int cleaner_command) {
-    // 2개 동작 수행해야할 때 호출
 
+void power(int is_power) {
+    printf("power get %d\n", is_power);
+    // is_power(on/off/up)에 따른 command 반환
+    return cleaner_interface(is_power);
+}
+
+
+
+int divider(int* is_forward, int cleaner_state) {
+    printf("divider get (is_forward: (%d, %d), cleaner_state: %d)\n", is_forward[ENABLE], is_forward[DISABLE], cleaner_state);
+    // 2개 동작 수행해야할 때 호출
+    move_forward(is_forward);
+    power(cleaner_state);
 }
 
 void stop() {
+    printf("\n--------------------------------------------------------\n");
     printf("RVC가 STOP에 진입했습니다.\n");
 }
 
@@ -471,7 +528,7 @@ void controller_test() {
     data.is_forward[0] = 0;
     data.is_forward[1] = 1;
 
-    const char* filename = "test_cases.txt";
+    const char* filename = "test_case1.txt";
     test_file = fopen(filename, "r");
     if (!test_file) {
         fprintf(stderr, "Error: Failed to open file '%s'.\n", filename);
@@ -740,7 +797,7 @@ void controller_test() {
 int main(void) {
     srand(time(NULL));
     printf("RVC의 전원이 켜졌습니다.\n");
-    controller();
-    //controller_test();
+    //controller();
+    controller_test();
     return 0;
 }

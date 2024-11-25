@@ -28,6 +28,8 @@
 #define R 2
 #define D 0
 
+
+
 typedef struct {
     int f;
     int l;
@@ -42,9 +44,9 @@ typedef struct {
 
 int* determine_obstacle_location() {
     static int obstacle_location[3] = { 0 };
-    int f = front_sensor_interface();
-    int l = left_sensor_interface();
-    int r = right_sensor_interface();
+    int f = front_sensor_interface(rand() % 2);
+    int l = left_sensor_interface(rand() % 2);
+    int r = right_sensor_interface(rand() % 2);
 
     obstacle_location[0] = f; // 앞 센서 값
     obstacle_location[1] = l; // 왼쪽 센서 값
@@ -54,28 +56,32 @@ int* determine_obstacle_location() {
 
 
 int determine_dust_existence() {
-    int d = dust_sensor_interface();
+    int d = dust_sensor_interface(rand()%2);
     return d;
 }
 
 // 앞 센서 인터페이스
-int front_sensor_interface() {
-    return rand() % 2; // 0 또는 1 반환 (장애물 존재 여부)
+int front_sensor_interface(int Front_Sensor_Input) {
+    int Front_Obstacle = Front_Sensor_Input;
+    return Front_Obstacle; // 0 또는 1 반환 (장애물 존재 여부)
 }
 
 // 왼쪽 센서 인터페이스
-int left_sensor_interface() {
-    return rand() % 2; // 0 또는 1 반환 (장애물 존재 여부)
+int left_sensor_interface(int Left_Sensor_Input) {
+    int Left_Obstacle = Left_Sensor_Input;
+    return Left_Obstacle; // 0 또는 1 반환 (장애물 존재 여부)
 }
 
 // 오른쪽 센서 인터페이스
-int right_sensor_interface() {
-    return rand() % 2; // 0 또는 1 반환 (장애물 존재 여부)
+int right_sensor_interface(int Left_Sensor_Input) {
+    int Right_Obstacle = Left_Sensor_Input;
+    return Right_Obstacle; // 0 또는 1 반환 (장애물 존재 여부)
 }
 
 // 먼지 센서 인터페이스
-int dust_sensor_interface() {
-    return rand() % 2; // 0 또는 1 반환 (먼지 존재 여부)
+int dust_sensor_interface(int Dust_Sensor_Input) {
+    int Dust_Existence = Dust_Sensor_Input;
+    return Dust_Existence; // 0 또는 1 반환 (먼지 존재 여부)
 }
 
 void motor_interface(int motor_command) {
